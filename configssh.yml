@@ -1,0 +1,13 @@
+---
+- hosts: linux-testers
+  tasks:
+    - name: Create SSH directory if it doesn't exist
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Add public SSH keys to authorized_keys file
+      authorized_key:
+        user: vboxuser
+        key: "{{ lookup('file', '/home/vboxuser/.ssh/id_rsa.pub') }}"

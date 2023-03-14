@@ -1,0 +1,66 @@
+---
+- name: Install ROS Noetic on Ubuntu 20.04+
+  hosts: linux-testers
+  become: yes
+  vars:
+    ansible_user: root
+    ansible_password: changeme
+  tasks:
+    - name: Setup sources.list
+      apt_repository:
+        repo: 'deb http://packages.ros.org/ros/ubuntu focal main'
+        state: present
+        filename: 'ros-latest'
+        update_cache: yes
+      register: ros_repo
+
+    - name: Setup keys
+      apt_key:
+        url: 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc'
+        state: present
+      register: ros_key
+
+    - name: Add ROS gpg keys
+      apt_key:
+        keyserver: hkp://pgp.mit.edu:80
+        id: F42ED6FBAB17C654
+        state: present
+
+    - name: Update packages
+      apt:
+        update_cache: yes
+
+    - name: Install ROS Noetic
+      apt:
+        name: 'ros-noetic-desktop-full'
+        state: present
+
+    - name: Initialize rosdep
+      apt:
+        name: 'python3-rosdep'
+        state: present
+
+    - name: Update rosdep
+      shell: 'sudo rosdep init'
+      changed_when: false
+
+    - name: Install dependencies for building packages
+      apt:
+        name:
+          - 'python3-rosinstall'
+          - 'python3-rosinstall-generator'
+          - 'python3-wstool'
+          - 'build-essential'
+        state: present
+
+    - name: Environment setup
+      lineinfile:
+        dest: ~/.bashrc
+        line: 'source /opt/ros/noetic/setup.bash'
+        create: true
+      register: bashrc
+
+    - name: Reload bashrc
+      shell: 'source ~/.bashrc'
+      when: bashrc.changed
+#end of line
