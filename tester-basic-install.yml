@@ -24,10 +24,12 @@
       apt:
         name: terminator
         state: present
+
     - name: Install htop
       apt:
         name: htop
         state: present
+
     - name: Install 
       apt: 
         name: nmap
